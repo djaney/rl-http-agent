@@ -59,6 +59,7 @@ class TestSocketEnv(unittest.TestCase):
 
         # recv pair request
         env = SocketEnv(self.server_sock, 3, 2, dtype=np.float16)
+        client_sock.recv(3) # ack pair
 
         # send state payload
         client_sock.sendto(state_payload, self.server_sock_address)
@@ -107,6 +108,7 @@ class TestSocketEnv(unittest.TestCase):
         client_sock.sendto(self.pair_payload, self.server_sock_address)
 
         env = SocketEnv(self.server_sock, 3, 1, dtype=np.float16)
+        client_sock.recv(3) # ack pair
 
         model = Sequential()
         model.add(Flatten(input_shape=(1, 3,)))
