@@ -1,0 +1,6 @@
+tensorflow
+keras
+keras-rl
+gym
+numpy
+nose
