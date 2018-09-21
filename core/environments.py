@@ -63,3 +63,6 @@ class SocketEnv(Env):
                     np.frombuffer(data[1:3], dtype=np.float16),  # score
                     np.frombuffer(data[3:4], dtype=np.int8),  # done
                 )
+
+class MemoryEnv(Env):
+    pass
