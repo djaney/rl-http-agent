@@ -26,10 +26,10 @@ def main():
                 print("weights created")
                 model.save_weights(weights_path)
             
-
+            time.sleep(1)
             print('training')
 
-            model.save_weights(weights_path)
+            model.save_weights(weights_path, overwrite=True)
             os.chmod(weights_path, 0o777)
             print("weights updated")
         time.sleep(1)
