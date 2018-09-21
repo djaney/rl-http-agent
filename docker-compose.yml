@@ -1,6 +1,7 @@
 version: "3"
 services:
   optimizer:
+    tty: true
     build: .
     volumes:
       - .:/app
@@ -9,6 +10,7 @@ services:
       - /app/optimizer.py
 
   api:
+    tty: true
     build: .
     volumes:
       - .:/app
