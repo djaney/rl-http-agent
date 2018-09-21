@@ -8,15 +8,26 @@ services:
     entrypoint:
       - python3
       - /app/optimizer.py
+    depends_on:
+      - redis
 
   api:
     tty: true
     build: .
+    ports:
+      - 5000:5000
     volumes:
       - .:/app
+    environment:
+      - FLASK_APP=/app/api.py
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
     entrypoint:
-      - python3
-      - /app/api.py
+      - flask
+      - run
+      - "--host=0.0.0.0"
+    depends_on:
+      - redis
 
   redis:
     image: redis:4.0.5-alpine
