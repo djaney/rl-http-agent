@@ -4,3 +4,4 @@ keras-rl
 gym
 numpy
 nose
+filelock
