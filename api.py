@@ -4,11 +4,15 @@ from flask import Flask, request, jsonify
 from filelock import FileLock
 import os.path
 import tensorflow as tf
-import random
+import logging
 import uuid
 from core.model_factory import get_agent, WEIGHTS, LOCK
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.disabled = True
+app.logger.disabled = True
+
 pending = {}
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -31,12 +35,12 @@ def forward():
         action = agent.forward(state)
 
     while True:
-        id = unique_id()
+        id = str(unique_id())
         if id not in pending.keys():
             break
 
     pending[id] = {"action": action, "state": state}
-
+    print("Forward", id)
     return jsonify({"action": int(action), "id": str(id)})
 
 
@@ -58,7 +62,6 @@ def backward():
     action = step["action"]
     reward = data["reward"]
     done = data["done"]
-
     agent.remember(state, action, reward, done)
     return jsonify({})
 

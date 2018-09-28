@@ -20,6 +20,7 @@ def main():
             os.chmod(lock_path, 0o777)
             if os.path.isfile(weights_path) and os.access(weights_path, os.W_OK & os.R_OK):
                 agent.load_weights(weights_path)
+                agent.optimize()
             else:
                 agent.save_weights(weights_path)
             

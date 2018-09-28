@@ -1,6 +1,7 @@
 import numpy as np
 import gym
 
+from core.memories import RedisMemory
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten
 from keras.optimizers import Adam
@@ -43,7 +44,8 @@ def get_agent():
 
     # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
     # even the metrics!
-    memory = SequentialMemory(limit=50000, window_length=2)
+    memory = RedisMemory(window_length=2)
+    memory.connect()
     policy = BoltzmannQPolicy()
     dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=10,
                 target_model_update=1e-2, policy=policy)

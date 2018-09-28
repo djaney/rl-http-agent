@@ -1,4 +1,5 @@
 from rl.agents.dqn import DQNAgent as BaseDQNAgent
+import numpy as np
 
 class DQNAgent(BaseDQNAgent):
     def forward(self, observation):
@@ -16,14 +17,16 @@ class DQNAgent(BaseDQNAgent):
 
         return action
 
-    def remember(self, observation, action, reward, terminal):
+    def remember(self, state, action, reward, terminal):
         # Store most recent experience in memory.
-        self.memory.append(observation, action, reward, terminal, training=True)
+        self.memory.append(state, action, reward, terminal, training=True)
 
+    def optimize(self):
 
-    def memory_learn(self):
         experiences = self.memory.sample(self.batch_size)
-        assert len(experiences) == self.batch_size
+        print(experiences)
+        if len(experiences) < self.nb_steps_warmup:
+            return
 
         # Start by extracting the necessary parameters (we use a vectorized implementation).
         state0_batch = []
