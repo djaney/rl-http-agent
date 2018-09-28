@@ -24,7 +24,6 @@ class DQNAgent(BaseDQNAgent):
     def optimize(self):
 
         experiences = self.memory.sample(self.batch_size)
-        print(experiences)
         if len(experiences) < self.nb_steps_warmup:
             return
 

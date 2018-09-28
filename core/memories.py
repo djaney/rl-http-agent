@@ -1,6 +1,5 @@
 from rl.memory import Memory, Experience
 import redis
-import numpy as np
 import random
 import pickle
 
@@ -28,16 +27,26 @@ class RedisMemory(Memory):
 
         sample = []
         while len(sample) < batch_size:
-            start = random.randint(0, mem_size - 2)
-            pair = self.conn.lrange(self.name, start, start + 1)
-            if len(pair) < 2:
+            start = random.randint(0, mem_size - self.window_length)
+            window = self.conn.lrange(self.name, start, start + self.window_length+1)
+            if len(window) < self.window_length:
                 return []
             else:
-                item = self.from_bytes(pair[0])
-                next_item = self.from_bytes(pair[1])
+                state0 = []
+                state1 = []
+                reward = []
+                action = []
+                terminal = []
+                for i in range(self.window_length):
+                    item = self.from_bytes(window[i])
+                    next_item = self.from_bytes(window[i+1])
+                    state0.append(item[0])
+                    state1.append(next_item[0])
+                    reward.append(item[2])
+                    action.append(item[1])
+                    terminal.append(item[3])
 
-                sample.append(Experience(state0=item[0],
-                                         action=item[1], reward=item[2], state1=next_item[0], terminal1=item[3]))
+                sample.append(Experience(state0=state0, action=action[-1], reward=reward[-1], state1=state1, terminal1=terminal[-1]))
 
         return sample
 

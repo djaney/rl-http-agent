@@ -40,7 +40,6 @@ def forward():
             break
 
     pending[id] = {"action": action, "state": state}
-    print("Forward", id)
     return jsonify({"action": int(action), "id": str(id)})
 
 
@@ -63,6 +62,7 @@ def backward():
     reward = data["reward"]
     done = data["done"]
     agent.remember(state, action, reward, done)
+    load_weights()
     return jsonify({})
 
 
