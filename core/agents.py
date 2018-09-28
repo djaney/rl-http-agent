@@ -18,10 +18,10 @@ class DQNAgent(BaseDQNAgent):
 
     def remember(self, observation, action, reward, terminal):
         # Store most recent experience in memory.
-        self.memory.append(observation, action, reward, terminal training=True)
+        self.memory.append(observation, action, reward, terminal, training=True)
 
 
-    def memory_learn(self, reward, terminal):
+    def memory_learn(self):
         experiences = self.memory.sample(self.batch_size)
         assert len(experiences) == self.batch_size
 
@@ -99,7 +99,7 @@ class DQNAgent(BaseDQNAgent):
         if self.processor is not None:
             metrics += self.processor.metrics
 
-    if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
-        self.update_target_model_hard()
+        if self.target_model_update >= 1 and self.step % self.target_model_update == 0:
+            self.update_target_model_hard()
 
-    return metrics
+        return metrics
