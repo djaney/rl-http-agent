@@ -10,7 +10,6 @@ from rl.agents.dqn import DQNAgent
 from rl.policy import BoltzmannQPolicy
 
 WEIGHTS = 'weights.h5f'
-LOCK = 'weights.h5f.lock'
 
 cache = None
 
