@@ -6,12 +6,20 @@ import os.path
 import tensorflow as tf
 import logging
 import uuid
+import redis
+import core.redis_credentials as redis_cred
 from core.model_factory import get_agent, WEIGHTS, LOCK
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 log.disabled = True
 app.logger.disabled = True
+
+redis_conn = redis.StrictRedis(
+            host=redis_cred.host,
+            port=redis_cred.port,
+            password=redis_cred.password)
+channel = redis_conn.pubsub()
 
 pending = {}
 
@@ -62,6 +70,10 @@ def backward():
     reward = data["reward"]
     done = data["done"]
     agent.remember(state, action, reward, done)
+
+    if done:
+        redis_conn.publish(redis_cred.optimizer_subscription, 'optimize')
+
     return jsonify({})
 
 

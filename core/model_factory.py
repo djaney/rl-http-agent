@@ -8,7 +8,7 @@ from keras.optimizers import Adam
 
 from core.agents import DQNAgent
 from rl.policy import BoltzmannQPolicy
-from rl.memory import SequentialMemory
+import core.redis_credentials as redis_cred
 
 WEIGHTS = 'weights.h5f'
 LOCK = 'weights.h5f.lock'
@@ -45,7 +45,7 @@ def get_agent():
     # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
     # even the metrics!
     memory = RedisMemory(window_length=2)
-    memory.connect()
+    memory.connect(host=redis_cred.host, port=redis_cred.port, password=redis_cred.password)
     policy = BoltzmannQPolicy()
     dqn = DQNAgent(model=model, nb_actions=nb_actions, memory=memory, nb_steps_warmup=10,
                 target_model_update=1e-2, policy=policy)
