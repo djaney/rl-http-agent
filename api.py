@@ -71,8 +71,7 @@ def backward():
     done = data["done"]
     agent.remember(state, action, reward, done)
 
-    if done:
-        redis_conn.publish(redis_cred.optimizer_subscription, 'optimize')
+    redis_conn.publish(redis_cred.optimizer_subscription, 'optimize')
 
     return jsonify({})
 
