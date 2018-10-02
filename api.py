@@ -62,8 +62,12 @@ def backward():
     reward = data["reward"]
     done = data["done"]
     agent.remember(state, action, reward, done)
-    load_weights()
     return jsonify({})
+
+
+@app.route("/reload", methods=['POST'])
+def reload():
+    load_weights()
 
 
 def load_weights():

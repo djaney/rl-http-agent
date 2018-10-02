@@ -29,7 +29,7 @@ class RedisMemory(Memory):
         while len(sample) < batch_size:
             start = random.randint(0, mem_size - self.window_length)
             window = self.conn.lrange(self.name, start, start + self.window_length+1)
-            if len(window) < self.window_length:
+            if len(window) <= self.window_length:
                 return []
             else:
                 state0 = []

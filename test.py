@@ -2,7 +2,6 @@
 
 import gym
 import requests
-import json
 
 ENV_NAME = 'CartPole-v0'
 env = gym.make(ENV_NAME)
@@ -20,5 +19,5 @@ while True:
 
         if done:
             break
-
+    requests.get('http://localhost:5000/reload')
     print("Score: {} ".format(total_reward))
