@@ -2,21 +2,6 @@ from rl.agents.dqn import DQNAgent as BaseDQNAgent
 import numpy as np
 
 class DQNAgent(BaseDQNAgent):
-    def forward(self, observation):
-        # Select an action.
-        state = self.memory.get_recent_state(observation)
-        q_values = self.compute_q_values(state)
-        if self.training:
-            action = self.policy.select_action(q_values=q_values)
-        else:
-            action = self.test_policy.select_action(q_values=q_values)
-
-        # Book-keeping.
-        self.recent_observation = observation
-        self.recent_action = action
-
-        return action
-
     def remember(self, state, action, reward, terminal):
         # Store most recent experience in memory.
         self.memory.append(state, action, reward, terminal, training=True)
