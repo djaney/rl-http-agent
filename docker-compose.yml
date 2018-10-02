@@ -1,16 +1,5 @@
 version: "3"
 services:
-  optimizer:
-    tty: true
-    build: .
-    volumes:
-      - .:/app
-    entrypoint:
-      - python3
-      - /app/optimizer.py
-    depends_on:
-      - redis
-
   api:
     tty: true
     build: .
@@ -26,8 +15,3 @@ services:
       - flask
       - run
       - "--host=0.0.0.0"
-    depends_on:
-      - redis
-
-  redis:
-    image: redis:4.0.5-alpine

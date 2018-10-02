@@ -4,32 +4,48 @@ from flask import Flask, request, jsonify
 from filelock import FileLock
 import os.path
 import tensorflow as tf
-import logging
 import uuid
-import redis
-import core.redis_credentials as redis_cred
+
 from core.model_factory import get_agent, WEIGHTS, LOCK
 
-app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.disabled = True
-app.logger.disabled = True
 
-redis_conn = redis.StrictRedis(
-            host=redis_cred.host,
-            port=redis_cred.port,
-            password=redis_cred.password)
-channel = redis_conn.pubsub()
+def load_weights():
+    weights_path = "{}/{}".format(dir_path, WEIGHTS)
+    lock_path = "{}/{}".format(dir_path, LOCK)
+    lock = FileLock(lock_path)
+    with lock:
+        if os.path.isfile(weights_path) and os.access(os.R_OK):
+            agent.load_weights(weights_path)
+
+
+def save_weights():
+    weights_path = "{}/{}".format(dir_path, WEIGHTS)
+    lock_path = "{}/{}".format(dir_path, LOCK)
+    lock = FileLock(lock_path)
+    with lock:
+        if os.path.isfile(weights_path) and os.access(os.R_OK):
+            agent.save_weights(weights_path)
+
+
+def unique_id():
+    return uuid.uuid1()
+
+
+app = Flask(__name__)
+# log = logging.getLogger('werkzeug')
+# log.disabled = True
+# app.logger.disabled = True
+
 
 pending = {}
+sessions = {}
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-weights_path = "{}/{}".format(dir_path, WEIGHTS)
-lock_path = "{}/{}".format(dir_path, LOCK)
 
-lock = FileLock(lock_path)
+
 agent = get_agent()
 graph = tf.get_default_graph()
+# load_weights()
 
 
 @app.route("/forward", methods=['POST'])
@@ -57,6 +73,9 @@ def backward():
     assert ("id" in data.keys())
     assert ("reward" in data.keys())
     assert ("done" in data.keys())
+    assert ("session_id" in data.keys())
+
+    session_id = data['session_id']
 
     step = pending.get(data["id"])
 
@@ -69,23 +88,23 @@ def backward():
     action = step["action"]
     reward = data["reward"]
     done = data["done"]
-    agent.remember(state, action, reward, done)
 
-    redis_conn.publish(redis_cred.optimizer_subscription, 'optimize')
+    if session_id not in sessions:
+        sessions[session_id] = []
+    session = sessions[session_id]
+    session.append((state, action, reward, done))
+
+    if done:
+        if session:
+
+            for state, action, reward, done in session:
+                agent.forward(state)
+                agent.backward(reward)
+
+            del sessions[session_id]
+            save_weights()
 
     return jsonify({})
 
 
-@app.route("/reload", methods=['POST'])
-def reload():
-    load_weights()
 
-
-def load_weights():
-    with lock:
-        if os.path.isfile(weights_path) and os.access(os.R_OK):
-            agent.load_weights(weights_path)
-
-
-def unique_id():
-    return uuid.uuid1()
