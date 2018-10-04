@@ -13,6 +13,7 @@ for sess_id in range(1000):
         r = requests.post('http://localhost:5000/forward', json={"state": ob.tolist()})
         r_obj = r.json()
         ob, reward, done, info = env.step(r_obj['action'])
+        env.render()
         requests.post('http://localhost:5000/backward', json={"id": r_obj['id'], "reward": reward, "done": done, "session_id": str(sess_id)})
 
         total_reward += reward

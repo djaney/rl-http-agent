@@ -5,6 +5,7 @@ import os.path
 import tensorflow as tf
 import uuid
 import logging
+import numpy as np
 
 from core.model_factory import get_agent, WEIGHTS
 
@@ -20,8 +21,8 @@ def load_weights():
 
 def save_weights():
     weights_path = "{}/{}".format(dir_path, WEIGHTS)
+    agent.save_weights(weights_path, overwrite=True)
     print('save')
-    agent.save_weights(weights_path)
     os.chmod(weights_path, 0o777)
 
 
@@ -108,17 +109,34 @@ def backward():
 
     if done:
         if session:
+            # train
+            if not agent.compiled:
+                raise RuntimeError(
+                    'Your tried to fit your agent but it hasn\'t been compiled yet. Please call `compile()` before `fit()`.')
+            agent.step = 0
+            agent.training = True
             for state, action, reward, done in session:
 
                 assert state is not None
+                with graph.as_default():
+                    agent.forward(state)
+                    metrics = agent.backward(reward, done)
 
-                agent.forward(state)
-                agent.backward(reward)
+                    output = []
+                    for i, name in enumerate(agent.metrics_names):
+                        output.append("{}: {}".format(name, metrics[i]))
 
+                    # terminal has zero score
+                    agent.forward(state)
+                    agent.backward(0., terminal=False)
+
+                    print(" ".join(output))
+
+                agent.step += 1
             del sessions[session_id]
             save_weights()
 
     return jsonify({})
 
 
-
+app.run(debug=True, host='0.0.0.0')
