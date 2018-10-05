@@ -3,21 +3,21 @@ import redis
 import pickle
 
 STATUS_RESTING = 'STATUS_RESTING'
-STATUS_WAITING_FOR_OBSERVATIONS = 'STATUS_WAITING_FOR_OBSERVATIONS'
 STATUS_WAITING_FOR_RESET_OBSERVATIONS = 'STATUS_WAITING_FOR_RESET_OBSERVATIONS'
 STATUS_WAITING_FOR_ACTION_RESULT = 'STATUS_WAITING_FOR_ACTION_RESULT'
 
 
 class RedisEnv(Env):
 
-    def __init__(self, host, port=6379, password=None, channel='RedisEnv'):
+    def __init__(self, host, port=6379, password=None, channel_prefix='RedisEnv'):
         self._status = STATUS_RESTING
-        self.channel = channel + '_observation'
-        self.status_key = channel + '_status'
-        self.action_key = channel + '_action'
+        self.channel_reset_observation = channel_prefix + '_reset_observation'
+        self.channel_step_result = channel_prefix + '_step_result'
+        self.status_key = channel_prefix + '_status'
+        self.action_key = channel_prefix + '_action'
         self.redis = redis.StrictRedis(host=host, port=port, password=password)
-        self.pubsub = self.redis.pubsub()
-        self.pubsub.subscribe(self.channel)
+        self.redis.set(self.status_key, self._status)
+        self.redis.set(self.action_key, pickle.dumps(0))
 
     def step(self, action):
 
@@ -38,8 +38,19 @@ class RedisEnv(Env):
 
     def _listen(self, status):
         self._status = status
-        for message in self.pubsub.listen():
-            if message['data'] == 1:
-                continue
-            return pickle.loads(message['data'])
+        self.redis.set(self.status_key, self._status)
+
+        if status == STATUS_WAITING_FOR_ACTION_RESULT:
+            channel = self.channel_step_result
+        elif status == STATUS_WAITING_FOR_RESET_OBSERVATIONS:
+            channel = self.channel_reset_observation
+        else:
+            raise Exception("No channel for " + status)
+        pubsub = self.redis.pubsub()
+        pubsub.subscribe(channel)
+
+        for message in pubsub.listen():
+            if message['type'] == 'message':
+                pubsub.unsubscribe(channel)
+                return pickle.loads(message['data'])
 

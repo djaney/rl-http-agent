@@ -2,7 +2,7 @@
 
 import gym
 import requests
-from core.environments import STATUS_RESTING, STATUS_WAITING_FOR_RESET_OBSERVATIONS
+from core.environments import STATUS_RESTING, STATUS_WAITING_FOR_RESET_OBSERVATIONS, STATUS_WAITING_FOR_ACTION_RESULT
 
 ENV_NAME = 'CartPole-v0'
 env = gym.make(ENV_NAME)
@@ -12,11 +12,19 @@ total_reward = 0
 while True:
     r = requests.get('http://localhost:5000/get_status')
     status = r.text.strip()
-    print(status)
+    print('status', status)
     if status == STATUS_RESTING:
         requests.get('http://localhost:5000/start')
     elif status == STATUS_WAITING_FOR_RESET_OBSERVATIONS:
         ob = env.reset()
+        print('ob', ob.tolist())
         requests.post('http://localhost:5000/send_reset', json=ob.tolist())
+    elif status == STATUS_WAITING_FOR_ACTION_RESULT:
+        r = requests.get('http://localhost:5000/get_action')
+        action = int(r.text.strip())
+        print('action', action)
+        ob, reward, done, info = env.step(action)
+        print('step', list([ob, reward, done, info]))
+        requests.post('http://localhost:5000/send_step_result', json=[ob.tolist(), reward, done, info])
 
 
