@@ -20,7 +20,7 @@ def load_weights(agent):
 
 def __start(a, e, g):
     weights_path = "{}/{}".format(dir_path, WEIGHTS)
-    callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=1000)
+    callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=100)
     with g.as_default():
         a.fit(e, nb_steps=10000, callbacks=[callbacks], verbose=2)
 
