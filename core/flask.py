@@ -5,13 +5,8 @@ import tensorflow as tf
 import logging
 import pickle
 from core.environments import RedisEnv
-from core.model_factory import get_agent, WEIGHTS
 from threading import Thread
 from rl.callbacks import ModelIntervalCheckpoint
-
-
-
-
 
 
 class FlaskApp:
