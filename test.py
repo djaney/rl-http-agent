@@ -29,4 +29,4 @@ while True:
             ob = env.reset()
             requests.post('http://localhost:5000/send_reset', json=ob.tolist())
 
-    # env.render()
+    env.render()

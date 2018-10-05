@@ -4,4 +4,3 @@
 __pycache__
 .vscode
 weights.h5f
-weights.h5f.lock
