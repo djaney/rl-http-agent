@@ -8,6 +8,7 @@ import pickle
 from core.environments import RedisEnv
 from core.model_factory import get_agent, WEIGHTS
 from threading import Thread
+from rl.callbacks import ModelIntervalCheckpoint
 
 
 def load_weights(agent):
@@ -15,20 +16,13 @@ def load_weights(agent):
     if os.path.isfile(weights_path) and os.access(weights_path, os.R_OK):
         print('load')
         agent.load_weights(weights_path)
-    else:
-        save_weights(agent)
-
-
-def save_weights(agent):
-    weights_path = "{}/{}".format(dir_path, WEIGHTS)
-    agent.save_weights(weights_path, overwrite=True)
-    print('save')
-    os.chmod(weights_path, 0o777)
 
 
 def __start(a, e, g):
+    weights_path = "{}/{}".format(dir_path, WEIGHTS)
+    callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=1000)
     with g.as_default():
-        a.fit(e, nb_steps=10000)
+        a.fit(e, nb_steps=10000, callbacks=[callbacks], verbose=2)
 
 
 app = Flask(__name__)
