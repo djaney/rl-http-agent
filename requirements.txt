@@ -8,4 +8,3 @@ filelock
 Flask
 requests
 redis
-box2d-py
