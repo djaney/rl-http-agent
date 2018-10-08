@@ -1,0 +1,19 @@
+version: "3"
+services:
+  api:
+    tty: true
+    build: .
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
+    entrypoint:
+      - /app/${APP}
+    depends_on:
+      - redis
+  redis:
+    image: redis:4.0.5-alpine
