@@ -35,6 +35,9 @@ class RedisEnv(Env):
     def render(self, mode='human'):
         pass
 
+    def set_status_done(self):
+        self._set_status(STATUS_DONE)
+
     @property
     def status(self):
         return self._status

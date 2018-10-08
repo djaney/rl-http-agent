@@ -32,13 +32,13 @@ class FlaskApp:
         self.redis_object = redis.StrictRedis(host='redis', port=6379, password=None)
         self.graph = tf.get_default_graph()
 
-        with self.graph.as_default():
-            self.agent = agent
+        self.agent = agent
 
         self.load_weights(self.agent, self.weights_path)
 
     def start(self):
-        Thread(target=self.__start, args=(self.weights_path, self.agent, self.env, self.graph)).start()
+        Thread(target=self.__start, args=(self.weights_path, self.agent,
+                                          self.env, self.graph, self.__restart_env_status)).start()
         return '', 204
 
     def get_status(self):
@@ -60,11 +60,16 @@ class FlaskApp:
         self.redis_object.publish(self.STEP_RESULT, pickle.dumps(tuple_data))
         return '', 204
 
+    def __restart_env_status(self):
+        self.env.set_status_done()
+
     @staticmethod
-    def __start(weights_path, a, e, g):
+    def __start(weights_path, a, e, g, callback=None):
         callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=100)
         with g.as_default():
             a.fit(e, nb_steps=10000, callbacks=[callbacks], verbose=2)
+        if callback is not None:
+            callback()
 
     @staticmethod
     def load_weights(agent, weights_path):
