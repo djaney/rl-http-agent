@@ -9,10 +9,12 @@ services:
       - .:/app
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
-      - FLASK_APP=/app/api.py
+      - FLASK_APP=/app/example_cartpole.py
       - LC_ALL=C.UTF-8
       - LANG=C.UTF-8
     entrypoint:
-      - flask
-      - run
-      - "--host=0.0.0.0"
+      - /app/example_cartpole.py
+    depends_on:
+      - redis
+  redis:
+    image: redis:4.0.5-alpine
