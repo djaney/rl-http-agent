@@ -9,11 +9,11 @@ services:
       - .:/app
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
-      - FLASK_APP=/app/example_cartpole.py
+      - APP=example_cartpole.py
       - LC_ALL=C.UTF-8
       - LANG=C.UTF-8
     entrypoint:
-      - /app/example_cartpole.py
+      - /app/${APP}
     depends_on:
       - redis
   redis:
