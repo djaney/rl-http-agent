@@ -9,7 +9,7 @@ services:
       - .:/app
     environment:
       - FLASK_ENV=${FLASK_ENV:-development}
-      - APP=example_cartpole.py
+      - APP=${APP:-example_cartpole.py}
       - LC_ALL=C.UTF-8
       - LANG=C.UTF-8
     entrypoint:

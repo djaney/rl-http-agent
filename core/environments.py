@@ -19,6 +19,8 @@ class RedisEnv(Env):
         self.redis = redis.StrictRedis(host=host, port=port, password=password)
         self.redis.set(self.status_key, self._status)
         self.redis.set(self.action_key, pickle.dumps(0))
+        self.pubsub = self.redis.pubsub()
+        self.pubsub.subscribe([self.channel_reset_observation, self.channel_step_result])
 
     def step(self, action):
 
@@ -46,14 +48,12 @@ class RedisEnv(Env):
             channel = self.channel_reset_observation
         else:
             raise Exception("No channel for " + status)
-        pubsub = self.redis.pubsub()
-        pubsub.subscribe(channel)
 
-        for message in pubsub.listen():
-            if message['type'] == 'message':
-                pubsub.unsubscribe(channel)
-                self._set_status(STATUS_PAUSE)
-                return pickle.loads(message['data'])
+        while True:
+            for message in self.pubsub.listen():
+                if message['type'] == 'message' and message['channel'].decode('utf-8') == channel:
+                    self._set_status(STATUS_PAUSE)
+                    return pickle.loads(message['data'])
 
     def _set_status(self, status):
         self._status = status
