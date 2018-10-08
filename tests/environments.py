@@ -1,6 +1,6 @@
 import unittest
 
-from core.environments import SocketEnv
+from keras_rl_http_agent.environments import SocketEnv
 import socket
 import numpy as np
 

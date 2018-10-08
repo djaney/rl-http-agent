@@ -4,7 +4,7 @@ import os.path
 import tensorflow as tf
 import logging
 import pickle
-from core.environments import RedisEnv
+from keras_rl_http_agent.environments import RedisEnv
 from threading import Thread
 from rl.callbacks import ModelIntervalCheckpoint
 
