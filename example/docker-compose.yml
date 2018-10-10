@@ -12,7 +12,7 @@ services:
       - LC_ALL=C.UTF-8
       - LANG=C.UTF-8
     entrypoint:
-      - /app/${APP}
+      - /app/cartpole.py
     depends_on:
       - redis
   redis:
