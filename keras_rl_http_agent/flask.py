@@ -16,8 +16,12 @@ class FlaskApp:
     ACTION = 'RedisEnv_action'
     STATUS = 'RedisEnv_status'
 
-    def __init__(self, agent, weights_path):
+    def __init__(self, agent, weights_path, nb_steps=10000, checkpoint=100, redis_host='redis', redis_port=6379,
+                 redis_password=None, verbose=2):
         self.weights_path = weights_path
+        self.nb_steps = nb_steps
+        self.verbose = verbose
+        self.checkpoint = checkpoint
         self.app = Flask(__name__)
         log = logging.getLogger('werkzeug')
         log.disabled = True
@@ -28,8 +32,8 @@ class FlaskApp:
         self.app.add_url_rule('/get_action', 'get_action', self.get_action, methods=['GET'])
         self.app.add_url_rule('/send_step_result', 'send_step_result', self.send_step_result, methods=['POST'])
 
-        self.env = RedisEnv(host='redis')
-        self.redis_object = redis.StrictRedis(host='redis', port=6379, password=None)
+        self.env = RedisEnv(host=redis_host, port=redis_port, password=redis_password)
+        self.redis_object = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password)
         self.graph = tf.get_default_graph()
 
         self.agent = agent
@@ -37,8 +41,8 @@ class FlaskApp:
         self.load_weights(self.agent, self.weights_path)
 
     def start(self):
-        Thread(target=self.__start, args=(self.weights_path, self.agent,
-                                          self.env, self.graph, self.__restart_env_status)).start()
+        Thread(target=self.__start, args=(self.nb_steps, self.weights_path, self.agent,
+                                          self.env, self.checkpoint, self.graph, self.verbose, self.__restart_env_status)).start()
         return '', 204
 
     def get_status(self):
@@ -64,10 +68,10 @@ class FlaskApp:
         self.env.set_status_done()
 
     @staticmethod
-    def __start(weights_path, a, e, g, callback=None):
-        callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=100)
-        with g.as_default():
-            a.fit(e, nb_steps=10000, callbacks=[callbacks], verbose=2)
+    def __start(nb_steps, weights_path, agent, environment, checkpoint, graph, verbose, callback=None):
+        callbacks = ModelIntervalCheckpoint(filepath=weights_path, interval=checkpoint)
+        with graph.as_default():
+            agent.fit(environment, nb_steps=nb_steps, callbacks=[callbacks], verbose=verbose)
         if callback is not None:
             callback()
 
